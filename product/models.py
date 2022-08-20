@@ -9,10 +9,10 @@ class CategoryModel(models.Model):
     slug = models.SlugField(max_length=100, unique=True, null=True)
 
     class Meta:
-            ordering = ('category_name',)
+        ordering = ('category_name',)
 
     def __str__(self):
-        return self.category_namecategory
+        return self.category_name
 
     def get_absolute_url(self):
         return f'/{self.slug}/'
@@ -27,7 +27,7 @@ class StoreProductsModel(models.Model):
     thumbnail = models.ImageField(upload_to = 'uploads/', blank = True, null = True)
     is_avaible = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(auto_now=True)
+    modified_date = models.DateTimeField(auto_now=True) 
 
     class Meta:
         ordering = ('-created_date',)
