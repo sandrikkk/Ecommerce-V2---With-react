@@ -2,8 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from product.models import CategoryModel, StoreProductsModel
-from product.serializer import ProductSerializer
-
+from product.serializers import ProductSerializer
 
 class LatestProductList(APIView):
     def get(self, request, format=None):
