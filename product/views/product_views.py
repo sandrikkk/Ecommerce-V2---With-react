@@ -1,9 +1,11 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from product.models import CategoryModel, StoreProductsModel
+from product.models import CategoryModel, Review, StoreProductsModel
 from product.serializers import ProductSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 class LatestProductList(APIView):
     def get(self, request, format=None):
@@ -68,3 +70,42 @@ class StoreProduts(APIView):
 
             serializer = ProductSerializer(products, many=True)
         return Response({'products':serializer.data, 'page': page, 'pages': paginator.num_pages})
+
+class createProductReview(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, category_slug, product_slug):
+        user = request.user
+        product = StoreProductsModel.objects.get(category__slug=category_slug, slug=product_slug)
+        data = request.data
+
+        # review already exists
+        alreadyexist = product.review_set.filter(user = user).exists()
+
+        if alreadyexist:
+            content = {'details': 'Product already reviewed'}
+            return Response(content, status = status.HTTP_400_BAD_REQUEST)
+
+        # no rating or 0
+        elif data['rating'] == 0:
+            content = {'details': 'Please select a rating'}
+            return Response(content, status = status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            review = Review.objects.create(
+                user = user,
+                product = product,
+                name = user.first_name,
+                rating = data['rating'],
+                comment = data['comment']
+            )
+            reviews = product.review_set.all()
+            product.numReviews = len(reviews)
+
+            total = 0
+            for i in reviews:
+                total += i.rating
+
+            product.rating = total / len(reviews)
+            product.save()
+
+            return Response('Review Added')

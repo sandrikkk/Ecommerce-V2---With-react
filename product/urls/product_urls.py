@@ -6,5 +6,6 @@ urlpatterns = [
     path('', views.StoreProduts.as_view()),
     path('<slug:category_slug>/', views.StoreProduts.as_view()),
     path('<slug:category_slug>/<slug:product_slug>/', views.ProductDetail.as_view()),
+    path('<slug:category_slug>/<slug:product_slug>/reviews/', views.createProductReview.as_view()),
 ]
     
