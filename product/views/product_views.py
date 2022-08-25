@@ -27,6 +27,10 @@ class StoreProduts(APIView):
             products = StoreProductsModel.objects.filter(category=categories, is_avaible=True)
             serializer = ProductSerializer(products, many=True)
         else:
-            products = StoreProductsModel.objects.filter(is_avaible=True)
+            query = request.query_params.get('keyword')
+            if query == None:
+                query = ''
+
+            products = StoreProductsModel.objects.filter(product_name__icontains = query,is_avaible=True)
             serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
