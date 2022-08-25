@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from product.models import CategoryModel, StoreProductsModel
 from product.serializers import ProductSerializer
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class LatestProductList(APIView):
     def get(self, request, format=None):
@@ -25,12 +26,45 @@ class StoreProduts(APIView):
         if category_slug != None:
             categories = get_object_or_404(CategoryModel, slug=category_slug)
             products = StoreProductsModel.objects.filter(category=categories, is_avaible=True)
+            page = request.query_params.get('page')# ?page = {request page number}
+            paginator = Paginator(products,3)
+
+            try:
+                products = paginator.page(page)
+            except PageNotAnInteger:
+                products = paginator.page(1)
+            except EmptyPage:
+                products = paginator.page(paginator.num_pages) #Last Page
+            
+            if page == None:
+                page = 1
+            
+            page = int(page)
             serializer = ProductSerializer(products, many=True)
         else:
-            query = request.query_params.get('keyword')
+            #Search
+            query = request.query_params.get('keyword')# ?keyword = {request Word}
             if query == None:
                 query = ''
-
             products = StoreProductsModel.objects.filter(product_name__icontains = query,is_avaible=True)
+            #SearchEnd
+
+            page = request.query_params.get('page')# ?page = {request page number}
+            paginator = Paginator(products,3)
+
+            try:
+                products = paginator.page(page)
+            except PageNotAnInteger:
+                products = paginator.page(1)
+            except EmptyPage:
+                products = paginator.page(paginator.num_pages) #Last Page
+            
+            if page == None:
+                page = 1
+            
+            page = int(page)
+
+
+
             serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+        return Response({'products':serializer.data, 'page': page, 'pages': paginator.num_pages})
